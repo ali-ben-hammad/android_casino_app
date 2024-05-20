@@ -1,52 +1,101 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
-import { router } from 'expo-router';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {router} from "expo-router";
+import { useDispatch } from 'react-redux';
+import { setUser } from './userSlice';
 
-export default function  LoginScreen({ navigation }: any){
+
+const LoginScreen = ({ navigation }: any) => {
+
+    const dispatch = useDispatch();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
 
-    const handleLogin = async (username :string, password: string) => {
-        try {
-            const user = await AsyncStorage.getItem(username);
-            if (user !== null && JSON.parse(user).password === password) {
-                // Authentication successful
-            } else {
-                // Authentication failed
-            }
-        } catch (error) {
-            console.error(error);
+    const handleLogin = async () => {
+        if (username.length < 4 || password.length < 4) {
+            setError('Username and password must be at least 4 characters long.');
+            return;
         }
+        const users = await AsyncStorage.getItem('users');
+        if (!users) {
+            setError('No users found. Please sign up.');
+        } else {
+            const existingUsers = JSON.parse(users);
+            const matchingUser = existingUsers.find(user => user.name === username && user.password === password);
+            if (matchingUser) {
+                dispatch(setUser(matchingUser));
+                setError('');
+                router.push('/');
+            } else {
+                setError('Invalid credentials. Please try again.');
+            }
+        }
+    };
+
+    const handleSignUp = async () => {
+        if (username.length < 4 || password.length < 4) {
+            setError('Username and password must be at least 4 characters long.');
+            return;
+        }
+        const user = {
+            name: username,
+            password: password,
+            amount: 15
+        };
+        const users = await AsyncStorage.getItem('users');
+        if (!users) {
+            await AsyncStorage.setItem('users', JSON.stringify([user]));
+        } else {
+            const existingUsers = JSON.parse(users);
+            existingUsers.push(user);
+            await AsyncStorage.setItem('users', JSON.stringify(existingUsers));
+        }
+        dispatch(setUser(user));
+        setError('');
         router.push('/');
     };
 
+
+
     return (
-        <View className="flex-1 justify-center items-center bg-gray-100 p-4">
-            <Text className="text-4xl font-bold mb-8">Ruine de Joueur</Text>
+        <View className="flex flex-1 justify-center items-center p-4">
+            <Text className="text-2xl font-bold mb-6">Ruine de Joueur</Text>
+            {error ? (
+                <Text className="text-red-500 mb-4">{error}</Text>
+            ) : null}
             <TextInput
-                className="w-full border rounded-lg py-4 px-6 mb-4 text-xl"
+                style={styles.input}
                 placeholder="Username"
                 value={username}
                 onChangeText={setUsername}
+                className="mb-4 px-4 py-2 border rounded"
             />
             <TextInput
-                className="w-full border rounded-lg py-4 px-6 mb-8 text-xl"
+                style={styles.input}
                 placeholder="Password"
                 secureTextEntry
                 value={password}
                 onChangeText={setPassword}
+                className="mb-4 px-4 py-2 border rounded"
             />
-            <TouchableOpacity
-                className="rounded-full bg-blue-500 py-4 px-8 hover:bg-blue-600 active:bg-blue-700"
-                onPress={()=>handleLogin(username, password)}
-                activeOpacity={0.8}
-            >
-                <Text className="text-white font-bold text-xl tracking-wide">
-                    Login
-                </Text>
+            <TouchableOpacity onPress={handleLogin} className="bg-blue-500 py-2 px-8 rounded-lg mb-2">
+                <Text className="text-white text-xl">Login</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleSignUp} className="bg-green-500 py-2 px-8 rounded-lg">
+                <Text className="text-white text-xl">Sign Up</Text>
             </TouchableOpacity>
         </View>
     );
 };
+
+const styles = StyleSheet.create({
+    input: {
+        width: '100%',
+        borderColor: 'gray',
+        borderWidth: 1,
+    },
+});
+
+export default LoginScreen;
