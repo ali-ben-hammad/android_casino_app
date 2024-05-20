@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import React, {useState} from 'react';
+import {View, Text, TextInput, TouchableOpacity, StyleSheet} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {router} from "expo-router";
-import { useDispatch } from 'react-redux';
-import { setUser } from './userSlice';
+import {useDispatch} from 'react-redux';
+import {setUser} from './userSlice';
 
 
-const LoginScreen = ({ navigation }: any) => {
+const LoginScreen = ({navigation}: any) => {
 
     const dispatch = useDispatch();
     const [username, setUsername] = useState('');
@@ -56,7 +56,6 @@ const LoginScreen = ({ navigation }: any) => {
         setError('');
         router.push('/');
     };
-
 
 
     return (

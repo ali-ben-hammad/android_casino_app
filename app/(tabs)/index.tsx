@@ -68,7 +68,11 @@ const HomeScreen = ({ navigation } : any) => {
         return (
             <View className="flex flex-1 justify-center items-center">
                 <Text className="text-2xl font-bold mb-4">Vous avez perdu !</Text>
-                <TouchableOpacity onPress={() => router.push('login')} className="bg-blue-500 py-2 px-8 rounded-lg">
+                <TouchableOpacity onPress={() => {
+                    // reset the user state
+                    dispatch(setUser({ name: '', amount: 0 }));
+                    router.push('login')
+                }} className="bg-blue-500 py-2 px-8 rounded-lg">
                     <Text className="text-white text-xl">Rejouer</Text>
                 </TouchableOpacity>
             </View>
